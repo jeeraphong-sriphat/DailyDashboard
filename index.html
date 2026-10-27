@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lab Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf7f2;
+    --card: #ffffff;
+    --ink: #4a4458;
+    --muted: #9a93a8;
+    --line: #efe7ef;
+    --mint: #bfe8d6;
+    --pink: #f8cfe0;
+    --lav: #d9d2f5;
+    --accent: #a48fd8;
+    --radius: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #2a2636; --card: #342f42; --ink: #efeaf7; --muted: #b3acc4;
+      --line: #434056; --mint: #3f6a5a; --pink: #6a4a5d; --lav: #4d4670; --accent: #c4b5f0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #2a2636; --card: #342f42; --ink: #efeaf7; --muted: #b3acc4;
+    --line: #434056; --mint: #3f6a5a; --pink: #6a4a5d; --lav: #4d4670; --accent: #c4b5f0;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Mali", "Sarabun", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    -webkit-text-size-adjust: 100%;
+  }
+  header {
+    padding: 14px 16px 10px;
+    padding-top: max(14px, env(safe-area-inset-top));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; }
+  .open-new {
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  nav.tabs {
+    margin: 0 16px 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 5px;
+  }
+  nav.tabs button {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-radius: 12px;
+    padding: 10px 6px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  nav.tabs button[aria-selected="true"] { background: var(--mint); font-weight: 600; }
+  nav.tabs button[data-tab="temp"][aria-selected="true"] { background: var(--pink); }
+  main {
+    flex: 1;
+    position: relative;
+    margin: 0 16px 16px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--card);
+    border: 1px solid var(--line);
+    min-height: 0;
+  }
+  iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: var(--card);
+    display: none;
+  }
+  iframe.active { display: block; }
+  .loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .loading.hide { display: none; }
+  @media (min-width: 900px) {
+    header, nav.tabs, main { max-width: 960px; margin-left: auto; margin-right: auto; }
+    main { height: calc(100vh - 150px); flex: none; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Lab Hub</h1>
+    <a class="open-new" id="openNew" href="#" target="_blank" rel="noopener">เปิดในแท็บใหม่ ↗</a>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" role="tab" data-tab="dash" aria-selected="true">Dashboard พนช.</button>
+    <button type="button" role="tab" data-tab="temp" aria-selected="false">Temp Checklist</button>
+  </nav>
+
+  <main>
+    <iframe id="frame-dash" class="active" title="Dashboard พนช." src="https://jeeraphong-sriphat.github.io/AsstDashboard/" loading="eager" allow="clipboard-write"></iframe>
+    <iframe id="frame-temp" title="Temp Checklist" data-src="https://jeeraphong-sriphat.github.io/Tempchecklist/" allow="clipboard-write"></iframe>
+    <div class="loading" id="loading">กำลังโหลด…</div>
+  </main>
+
+<script>
+  const SOURCES = {
+    dash: { url: "https://jeeraphong-sriphat.github.io/AsstDashboard/" },
+    temp: { url: "https://jeeraphong-sriphat.github.io/Tempchecklist/" }
+  };
+  const tabs = document.querySelectorAll('[role="tab"]');
+  const loading = document.getElementById('loading');
+  const openNew = document.getElementById('openNew');
+
+  function show(name) {
+    tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+    document.querySelectorAll('iframe').forEach(f => f.classList.toggle('active', f.id === 'frame-' + name));
+    const frame = document.getElementById('frame-' + name);
+    if (!frame.getAttribute('src')) {
+      loading.classList.remove('hide');
+      frame.setAttribute('src', frame.dataset.src);
+    }
+    openNew.href = SOURCES[name].url;
+  }
+
+  tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.tab)));
+  document.getElementById('frame-dash').addEventListener('load', () => loading.classList.add('hide'));
+  document.getElementById('frame-temp').addEventListener('load', () => loading.classList.add('hide'));
+  openNew.href = SOURCES.dash.url;
+</script>
+</body>
+</html>
