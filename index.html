@@ -84,14 +84,18 @@
   nav.tabs button[aria-selected="true"] { background: var(--mint); font-weight: 600; }
   nav.tabs button[data-tab="temp"][aria-selected="true"] { background: var(--pink); }
   main {
-    flex: 1;
     position: relative;
     margin: 0 16px 16px;
     border-radius: var(--radius);
     overflow: hidden;
     background: var(--card);
     border: 1px solid var(--line);
-    min-height: 0;
+    /* explicit height: iframes are absolutely positioned, so main must size itself */
+    height: calc(100vh - 150px);
+    min-height: 420px;
+  }
+  @supports (height: 100dvh) {
+    main { height: calc(100dvh - 150px); }
   }
   iframe {
     position: absolute;
@@ -116,7 +120,8 @@
   .loading.hide { display: none; }
   @media (min-width: 900px) {
     header, nav.tabs, main { max-width: 960px; margin-left: auto; margin-right: auto; }
-    main { height: calc(100vh - 150px); flex: none; }
+    main { height: calc(100vh - 150px); }
+    @supports (height: 100dvh) { main { height: calc(100dvh - 150px); } }
   }
 </style>
 </head>
